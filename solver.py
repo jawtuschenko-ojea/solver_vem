@@ -11,9 +11,18 @@ def assembler():
 	# loop over elements and assemble stiffness matrix
 	pass
 
-def local_stiffness_tetra():
-	pass
-
+def local_stiffness_tetra(p):
+	# Input: 4x3 matrix, vertices of tetrhedron.
+	# Output: a vector with the coefficients of the local
+	#	stiffness matrix.
+	d = p.shape[1]
+    stiff_rhs = np.vstack((np.zeros((1,d)),np.eye(d)))
+	H = np.vstack((np.ones((1,d+1)),nodes.T))
+    meas_t = np.absolute(np.linalg.det(H))/factorial(d)
+    G = np.linalg.solve(H,stiff_rhs)
+    stiffness_loc = meas_t*G@G.T
+    return stiffness_loc.flatten()
+        
 def local_stiffness_prism():
 	pass
 
