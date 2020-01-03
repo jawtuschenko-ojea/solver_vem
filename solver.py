@@ -8,7 +8,13 @@ local_stiffness = { 4 : local_stiffness_tetra,
 def load_mesh(in_file):
 	pass
     vertices = np.genfromtxt(in_file+".ver").T
-    elements = 
+    with open (in_file+."ebv") as infile:
+        inlist = infile.readlines()
+    pre_list = [line.strip(' \n').split(',') for line in inlist]
+    # CONTINUE HERE: 
+    #        test if following line makes sense
+    #        up to now, it is a list of arrays. Do we need an np.matrix filled up with 0s?
+    elements = [np.array([int(st[k]) for k in range(len(st))]) for st in pre_list]
 
 def assembler():
 	# loop over elements and assemble stiffness matrix
