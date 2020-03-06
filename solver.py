@@ -43,7 +43,7 @@ def local_stiffness_prism(nodes):
     >>>> transform_to_reference_prism neccesary?
     >>>> reindexation to have a^0, a^1, a^2...?
     stiff_rhs = np.vstack((np.zeros((1,2)),np.eye(2)))
-    H1 = np.vstack((np.ones(1,3),nodes([0:1],[0:2])))
+    H1 = np.vstack((np.ones((1,3)),nodes[0:2,0:3]))
     grad2D = np.linalg.solve()
     pass
 
