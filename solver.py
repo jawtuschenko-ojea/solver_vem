@@ -1,14 +1,10 @@
 # Assembler: 
 import numpy as np
 
-local_stiffness = { 4 : local_stiffness_tetra,
-                    5 : local_stiffness_pyramid,
-                    6 : local_stiffness_prism}
-
 def load_mesh(in_file):
     pass
     vertices = np.genfromtxt(in_file+".ver").T
-    with open (in_file+."ebv") as infile:
+    with open (in_file+".ebv") as infile:
         inlist = infile.readlines()
     pre_list = [line.strip(' \n').split(',') for line in inlist]
     # CONTINUE HERE: 
@@ -35,14 +31,32 @@ def local_stiffness_tetra(nodes):
     return stiffness_loc.flatten()
         
 def local_stiffness_prism(nodes):
-    """
+    """    
     nodes: 3 x 6 matrix
-    basis: { phi_ij = alpha_i*beta_j}
     grad2D: matrix with rows (d alpha_i/dx, d alpha_i/dy)
     
+    nodal functions are tensor products:
+
+    basis: { phi_ij = alpha_i*beta_j}
+
     We identify which are the coordinates of the plane containing
     the triangles of the prism by subtracting adyacent nodes along "x3" axis
     and looking for the non-zero coordinate.
+    
+    A:  3 x 3 matrix of 2D integrals of the products between the
+        2D gradientes of {alpha_i : i} with respect to the coordinates
+        over the triangles of the prism.
+
+    B:  2 x 2 matrix of 1D integrals of the products between the
+        {beta_j : j} along the perpendicular coordinate. We use Simpson's
+        rule.
+
+    C:  3 x3 matrix of 2D integrals of the products between the
+        {alpha_i : i}. We use Simpson's rule.
+
+    D:  2 x 2 matrix of 1D integrals of the products between the
+        1D derivatives of the {beta_j : j} along the perpendicular 
+        coordinate.
     """
     difference = np.absolute(nodes[:,3]-nodes[:,0])
     axis = np.argmax(difference)
@@ -50,11 +64,22 @@ def local_stiffness_prism(nodes):
     stiff_rhs = np.vstack((np.zeros((1,2)),np.eye(2)))
     H1 = np.vstack((np.ones((1,3)),nodes[triangle,0:3]))
     grad2D = np.linalg.solve(H1,stiff_rhs)
+    H2 = np.vstack((np.array([1,1]),nodes[axis,[0,3]]))
+    deriv_axis = np.linalg.solve(H2,np.array([[0],[1]]))
+    meas_t = np.linalg.norm(np.cross(nodes[:,1]-nodes[:,0],nodes[:,2]-nodes[:,0]))
+    meas_l = difference[axis]
+    A = meas_t*grad2D@grad2D.T
+    B = meas_l*np.array([[1/3,1/6],[1/6,1/3]])
+    C = meas_t/3*np.array([[1/2,1/4,1/4],[1/4,1/2,1/4],[1/4,1/4,1/2]])
+    D = meas_l*deriv_axis@deriv_axis.T
     
-    pass
-
+    return np.kron(B,A) + np.kron (D,C)
+    
 def local_stiffness_pyramid(nodes):
     """
     nodes: 3 x 5 matrix
     """
-    pass
+
+local_stiffness = { 4 : local_stiffness_tetra,
+                    5 : local_stiffness_pyramid,
+                    6 : local_stiffness_prism}
