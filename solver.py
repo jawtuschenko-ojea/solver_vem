@@ -79,6 +79,7 @@ def local_stiffness_pyramid(nodes):
     """
     nodes: 3 x 5 matrix
     """
+    return
 
 local_stiffness = { 4 : local_stiffness_tetra,
                     5 : local_stiffness_pyramid,
