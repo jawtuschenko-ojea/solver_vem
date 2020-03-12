@@ -50,6 +50,7 @@ def local_stiffness_prism(nodes):
     stiff_rhs = np.vstack((np.zeros((1,2)),np.eye(2)))
     H1 = np.vstack((np.ones((1,3)),nodes[triangle,0:3]))
     grad2D = np.linalg.solve(H1,stiff_rhs)
+    
     pass
 
 def local_stiffness_pyramid(nodes):
