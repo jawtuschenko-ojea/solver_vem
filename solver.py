@@ -28,7 +28,7 @@ def local_stiffness_tetra(nodes):
     """ 
     d = nodes.shape[0]
     stiff_rhs = np.vstack((np.zeros((1,d)),np.eye(d)))
-    H = np.vstack((np.ones((1,d+1)),nodes.T))
+    H = np.vstack((np.ones((1,d+1)),nodes))
     meas_t = np.absolute(np.linalg.det(H))/factorial(d)
     G = np.linalg.solve(H,stiff_rhs)
     stiffness_loc = meas_t*G@G.T
@@ -39,13 +39,20 @@ def local_stiffness_prism(nodes):
     nodes: 3 x 6 matrix
     basis: { phi_ij = alpha_i*beta_j}
     grad2D: matrix with rows (d alpha_i/dx, d alpha_i/dy)
+    
+    We identify which are the coordinates of the plane containing
+    the triangles of the prism by subtracting adyacent nodes along "x3" axis
+    and looking for the non-zero coordinate.
     """
-    >>>> transform_to_reference_prism neccesary?
-    >>>> reindexation to have a^0, a^1, a^2...?
+
     stiff_rhs = np.vstack((np.zeros((1,2)),np.eye(2)))
+
     H1 = np.vstack((np.ones((1,3)),nodes[0:2,0:3]))
     grad2D = np.linalg.solve()
     pass
 
-def local_stiffness_pyramid():
+def local_stiffness_pyramid(nodes):
+    """
+    nodes: 3 x 5 matrix
+    """
     pass
