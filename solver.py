@@ -57,15 +57,15 @@ def local_stiffness_prism(nodes):
         1D derivatives of the {beta_j : j} along the perpendicular 
         coordinate.
     """
-    difference = np.absolute(nodes[:,3]-nodes[:,0])
-    axis = np.argmax(difference)
+    difference  = np.absolute(nodes[:,3]-nodes[:,0])
+    axis        = np.argmax(difference)
     triangle = np.setdiff1d(np.arange(3),[axis])
     stiff_rhs = np.vstack((np.zeros((1,2)),np.eye(2)))
     H1 = np.vstack((np.ones((1,3)),nodes[triangle,0:3]))
     grad2D = np.linalg.solve(H1,stiff_rhs)
     H2 = np.vstack((np.array([1,1]),nodes[axis,[0,3]]))
     deriv_axis = np.linalg.solve(H2,np.array([[0],[1]]))
-    meas_t = np.linalg.norm(np.cross(nodes[:,1]-nodes[:,0],nodes[:,2]-nodes[:,0]))
+    meas_t = np.linalg.norm(np.cross(nodes[:,1]-nodes[:,0],nodes[:,2]-nodes[:,0]))/2
     meas_l = difference[axis]
     A = meas_t*grad2D@grad2D.T
     B = meas_l*np.array([[1/3,1/6],[1/6,1/3]])
@@ -77,22 +77,28 @@ def local_stiffness_prism(nodes):
 def local_stiffness_pyramid(nodes):
     """
     nodes: 3 x 5 matrix
+    meas_p: measure of the pyramid
+
     centroid of a pyramid is a convex combination of base centroid and the top:
             (1/4)*Top + (1-1/4)*base_centroid
 
 
-    TODO:   PONER POR QUE QUEDA submatriz identidad en G      
+    TODO:   PONER POR QUE QUEDA submatriz identidad en G,
+    dado que es grado bajo      
 
     """
-    edges         = nodes[:,0,0,0,0,1,1,1,2,2,3]-nodes[:,1,2,3,4,2,3,4,3,4,4]
-    diameter      = np.max(np.linalg.norm(edges,axis=0))
     base_centroid = np.mean(nodes[:,0:4],axis=1)
+    edges         = nodes[:,[1,2,3,4,2,3,4,3,4,4]]-nodes[:,[0,0,0,0,1,1,1,2,2,3]]
+    diameter      = np.max(np.linalg.norm(edges,axis=0))
     centroid      = (nodes[:,4]+3*base_centroid)/4
-
-    idea: 
+    meas_p        = np.abs(np.linalg.det(edges[:,[0,2,3]]))/3
     row_one       = np.hstack(([1], np.sum(nodes - centroid,axis=1)/(5*diameter)))
-    lower_rows    = np.hstack((np.zeros(3,1),np.eye(3)))/diameter
+    lower_rows    = meas_p*np.hstack((np.zeros(3,1),np.eye(3)))/diameter
     G             = np.vstack((row_one,lower_rows))
+
+
+    ## CONTINUE WITH: boundary term for matrix B
+
 
     return
 
