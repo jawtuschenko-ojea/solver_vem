@@ -44,11 +44,12 @@ def local_stiffness_prism(nodes):
     the triangles of the prism by subtracting adyacent nodes along "x3" axis
     and looking for the non-zero coordinate.
     """
-
+    difference = np.absolute(nodes[:,3]-nodes[:,0])
+    axis = np.argmax(difference)
+    triangle = np.setdiff1d(np.arange(3),[axis])
     stiff_rhs = np.vstack((np.zeros((1,2)),np.eye(2)))
-
-    H1 = np.vstack((np.ones((1,3)),nodes[0:2,0:3]))
-    grad2D = np.linalg.solve()
+    H1 = np.vstack((np.ones((1,3)),nodes[triangle,0:3]))
+    grad2D = np.linalg.solve(H1,stiff_rhs)
     pass
 
 def local_stiffness_pyramid(nodes):
