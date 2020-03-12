@@ -2,7 +2,6 @@
 import numpy as np
 
 def load_mesh(in_file):
-    pass
     vertices = np.genfromtxt(in_file+".ver").T
     with open (in_file+".ebv") as infile:
         inlist = infile.readlines()
@@ -73,12 +72,28 @@ def local_stiffness_prism(nodes):
     C = meas_t/3*np.array([[1/2,1/4,1/4],[1/4,1/2,1/4],[1/4,1/4,1/2]])
     D = meas_l*deriv_axis@deriv_axis.T
     
-    return np.kron(B,A) + np.kron (D,C)
+    return np.kron(B,A) + np.kron(D,C)
     
 def local_stiffness_pyramid(nodes):
     """
     nodes: 3 x 5 matrix
+    centroid of a pyramid is a convex combination of base centroid and the top:
+            (1/4)*Top + (1-1/4)*base_centroid
+
+
+    TODO:   PONER POR QUE QUEDA submatriz identidad en G      
+
     """
+    edges         = nodes[:,0,0,0,0,1,1,1,2,2,3]-nodes[:,1,2,3,4,2,3,4,3,4,4]
+    diameter      = np.max(np.linalg.norm(edges,axis=0))
+    base_centroid = np.mean(nodes[:,0:4],axis=1)
+    centroid      = (nodes[:,4]+3*base_centroid)/4
+
+    idea: 
+    row_one       = np.hstack(([1], np.sum(nodes - centroid,axis=1)/(5*diameter)))
+    lower_rows    = np.hstack((np.zeros(3,1),np.eye(3)))/diameter
+    G             = np.vstack((row_one,lower_rows))
+
     return
 
 local_stiffness = { 4 : local_stiffness_tetra,
